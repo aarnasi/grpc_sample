@@ -1,31 +1,31 @@
-import { Controller, Get, Inject, OnModuleInit, Param } from '@nestjs/common';
+import { Controller, Get, Inject, OnModuleInit, Param } from "@nestjs/common";
 import {
   ClientGrpc,
   GrpcMethod,
   GrpcStreamMethod,
-} from '@nestjs/microservices';
-import { Observable, ReplaySubject, Subject } from 'rxjs';
-import { toArray } from 'rxjs/operators';
-import { HeroById } from './interfaces/hero-by-id.interface';
-import { Hero } from './interfaces/hero.interface';
+} from "@nestjs/microservices";
+import { Observable, ReplaySubject, Subject } from "rxjs";
+import { toArray } from "rxjs/operators";
+import { HeroById } from "./interfaces/hero-by-id.interface";
+import { Hero } from "./interfaces/hero.interface";
 
 interface HeroService {
   findOne(data: HeroById): Observable<Hero>;
   findMany(upstream: Observable<HeroById>): Observable<Hero>;
 }
 
-@Controller('hero')
+@Controller("hero")
 export class HeroController implements OnModuleInit {
   private readonly items: Hero[] = [
-    { id: 1, name: 'John' },
-    { id: 2, name: 'Doe' },
+    { id: 1, name: "John" },
+    { id: 2, name: "Doe" },
   ];
   private heroService: HeroService;
 
-  constructor(@Inject('HERO_PACKAGE') private readonly client: ClientGrpc) {}
+  constructor(@Inject("HERO_PACKAGE") private readonly client: ClientGrpc) {}
 
   onModuleInit() {
-    this.heroService = this.client.getService<HeroService>('HeroService');
+    this.heroService = this.client.getService<HeroService>("HeroService");
   }
 
   @Get()
@@ -39,17 +39,17 @@ export class HeroController implements OnModuleInit {
     return stream.pipe(toArray());
   }
 
-  @Get(':id')
-  getById(@Param('id') id: string): Observable<Hero> {
+  @Get(":id")
+  getById(@Param("id") id: string): Observable<Hero> {
     return this.heroService.findOne({ id: +id });
   }
 
-  @GrpcMethod('HeroService')
+  @GrpcMethod("HeroService")
   findOne(data: HeroById): Hero {
     return this.items.find(({ id }) => id === data.id);
   }
 
-  @GrpcStreamMethod('HeroService')
+  @GrpcStreamMethod("HeroService")
   findMany(data$: Observable<HeroById>): Observable<Hero> {
     const hero$ = new Subject<Hero>();
 
